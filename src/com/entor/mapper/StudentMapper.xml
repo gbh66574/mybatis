@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.entor.dao.StudentDao">
+
+<sql id="commonCols">
+
+</sql>
+<resultMap type="Student" id="StudentMap">
+<id property="id" column="id"/>
+<result property="name" column="name"/>
+<result property="username" column="username"/>
+<result property="password" column="password"/>
+<result property="sex" column="sex"/>
+<result property="age" column="age"/>
+<result property="birthday" column="birthday"/>
+<result property="createTime" column="createTime"/>
+</resultMap>
+<resultMap type="Student" id="ClassesMap">
+<id property="id" column="cid"/>
+<result property="name" column="cname"/>
+</resultMap>
+<resultMap type="Student" id="StudentClassesMap">
+<id property="id" column="id"/>
+<result property="name" column="name"/>
+<result property="username" column="username"/>
+<result property="password" column="password"/>
+<result property="sex" column="sex"/>
+<result property="age" column="age"/>
+<result property="birthday" column="birthday"/>
+<result property="createTime" column="createTime"/>
+<association property="classes" javaType="Classes" resultMap="ClasserMap"/>
+</resultMap>
+<resultMap type="Classes" id="ClassesStudentMap">
+<id property="id" column="cid"/>
+<result property="name" column="cname"/>
+<collection property="student" ofType="Student" resultMap="StudentMap"/>
+</resultMap>
+	<insert id="add" parameterType="Student">
+		insert into student(name,username,password,sex,age,birthday,createTime)
+		values(#{name},#{username},#{password},#{sex},#{age},#{birthday},#{createTime})
+	</insert>
+	<insert id="addMore">
+	insert into student(name,username,password,sex,age,birthday,createTime)values
+	<foreach collection="list" item="s" separator=",">
+	(#{name},#{username},#{password},#{sex},#{age},#{birthday},#{createTime})
+	</foreach>
+	</insert>
+	<update id="dynamicupdate" parameterType="Student">
+		update student 
+		<set>
+		<if test="name!=null and name!=''">
+		name=#{name},
+		</if>
+		<if test="username!=null and username!=''">
+		username=#{username},
+		</if>
+		<if test="password!=null and password!=''">
+		password=#{password},
+		</if>
+		<if test="age!=0">
+		age=#{age},
+		</if>
+		<if test="birthday!=null and birthday!=''">
+		birthday=#{birthday},
+		</if>
+		<if test="createTime!=null and createTime!=''">
+		createTime=#{createTime}
+		</if>
+		</set>
+		where id=#{id}
+	</update>
+	
+	<select id="queryById" parameterType="int" resultType="Student">
+	select * from student where id=#{id}
+	</select>
+	<select id="queryClassesBySid" resultMap="StudentClassesMap">
+	select s.*,c.id cid,c.name cname from student s,classes c where s.cid=c.id and s.id=#{id}
+	</select>
+	<select id="queryClassesByCid" resultMap="ClassesStudentMap">
+	select s.*,c.id cid,c.name cname from student s,classes c where s.cid=c.id and c.id=#{id}
+	</select>
+	<select id="queryAll"  resultType="Student">
+	select * from student where id&lt;100
+	</select>
+	<select id="queryByPage" parameterType="map" resultType="Student">
+	select * from student limit #{currentPage},#{pageSize}
+	</select>
+	<select id="queryByUsername"   resultType="Student">
+	select * from student where username like "%"#{username}"%"
+	</select>
+	<select id="queryByCondition" resultType="student" parameterType="map">
+	select * from student where 1=1
+	<if test="name!=null and name!=''">
+	and name like "%"#{name}"%"
+	</if>
+	<if test="username!=null and username!=''">
+	and name like "%"#{username}"%"
+	</if>
+	<if test="sex!=null and sex!=''">
+	and sex = #{sex}
+	</if>
+	</select>
+	<select id="getToals" resultType="int">
+	select count(*) from student
+	</select>
+	<delete id="deleteById">
+	delete from student where id=#{id}
+	</delete>
+	<delete id="deleteMore">
+	delete from student where id in
+	<foreach collection="array" open="(" close=")" separator="," item="id">
+	#{id}
+	</foreach>
+	</delete>
+	
+</mapper>
